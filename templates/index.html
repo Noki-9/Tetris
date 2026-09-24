@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="icon" type="image/x-icon" href="/static/img/favicon.ico">
+    <title>Тетрис</title>
+</head>
+<body>
+
+    <div class="game-wrapper">
+        <div class="stats">
+            <div class="stat">
+                <span class="stat-label">Счёт</span>
+                <span class="stat-value" id="score">0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Линии</span>
+                <span class="stat-value" id="lines">0</span>
+            </div>
+            <button class="pause-btn" id="pause-btn" aria-label="Пауза">
+                <span class="pause-icon"></span>
+            </button>
+        </div>
+        <div class="grid"><!-- ячейки генерируются в script.js --></div>
+    </div>
+
+    <!-- Стартовый экран -->
+    <div class="overlay" id="start-screen">
+        <div class="menu">
+            <h1 class="menu-title">ТЕТРИС</h1>
+            <p class="menu-subtitle">Собери как можно больше линий</p>
+            <button class="menu-btn" id="start-btn">Начать игру</button>
+            <div class="menu-hint">
+                <span>← → — движение</span>
+                <span>↑ — поворот</span>
+                <span>↓ — ускорить</span>
+                <span>Пробел — сброс</span>
+                <span>P / Esc — пауза</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Экран паузы -->
+    <div class="overlay hidden" id="pause-screen">
+        <div class="menu">
+            <h1 class="menu-title">Пауза</h1>
+            <p class="menu-subtitle">Счёт: <span id="pause-score">0</span></p>
+            <button class="menu-btn" id="resume-btn">Продолжить</button>
+            <button class="menu-btn menu-btn--ghost" id="pause-restart-btn">Начать заново</button>
+        </div>
+    </div>
+
+    <!-- Экран проигрыша -->
+    <div class="overlay hidden" id="game-over-screen">
+        <div class="menu">
+            <h1 class="menu-title">Игра окончена</h1>
+            <p class="menu-subtitle">Ваш результат</p>
+            <p class="final-score"><span id="final-score">0</span></p>
+            <button class="menu-btn" id="restart-btn">Играть снова</button>
+        </div>
+    </div>
+
+    <noscript>Включите JavaScript</noscript>
+    <script src="https://hammerjs.github.io/dist/hammer.min.js"></script>
+    <script type="module" src="/scripts/script.js"></script>
+</body>
+</html>
