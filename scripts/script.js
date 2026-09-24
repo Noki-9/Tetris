@@ -35,6 +35,9 @@ const SCORES_PER_LINES = { 1: 100, 2: 300, 3: 500, 4: 800 };
 /* Задержка между автоматическими «тиками» падения фигуры, мс */
 const TICK_DELAY = 700;
 
+/* Запас в пикселях, чтобы поле гарантированно не вылезло за край */
+const SAFETY_PX = 2;
+
 /* ─── Построение поля ────────────────────────────────────── */
 
 const grid = document.querySelector(".grid");
@@ -42,6 +45,77 @@ for (let i = 0; i < PLAYFIELD_ROWS * PLAYFIELD_COLUMNS; i++) {
     grid.appendChild(document.createElement("div"));
 }
 const cells = document.querySelectorAll(".grid > div");
+
+/* ─── Точный расчёт размера поля ─────────────────────────── */
+
+/**
+ * 1) Пишет реальные размеры видимой области в --vh-px / --vw-px
+ *    (важно на мобильных, где 100vh больше видимой зоны).
+ * 2) Считает максимально возможный размер клетки и ЖЁСТКО
+ *    выставляет width/height элементу .grid в пикселях.
+ *    Ячейки растягиваются на 1fr — за край ничего не выходит.
+ */
+function refreshLayout() {
+    const root = document.documentElement;
+    const vv   = window.visualViewport;
+
+    const vpH = vv ? vv.height : window.innerHeight;
+    const vpW = vv ? vv.width  : window.innerWidth;
+
+    root.style.setProperty("--vh-px", vpH + "px");
+    root.style.setProperty("--vw-px", vpW + "px");
+
+    const wrapper = document.querySelector(".game-wrapper");
+    const stats   = document.querySelector(".stats");
+    const gridEl  = document.querySelector(".grid");
+    if (!wrapper || !stats || !gridEl) return;
+
+    /* --- размеры обёртки без её собственных padding'ов --- */
+    const wcs = getComputedStyle(wrapper);
+    const wPadV = (parseFloat(wcs.paddingTop)    || 0)
+                + (parseFloat(wcs.paddingBottom) || 0);
+    const wPadH = (parseFloat(wcs.paddingLeft)   || 0)
+                + (parseFloat(wcs.paddingRight)  || 0);
+    const wGap  = parseFloat(wcs.rowGap) || 0;
+
+    const wRect = wrapper.getBoundingClientRect();
+    const wrapperW = wRect.width  - wPadH;
+    const wrapperH = wRect.height - wPadV;
+
+    /* --- высота шапки --- */
+    const statsH = stats.getBoundingClientRect().height;
+
+    /* --- сколько остаётся на само поле --- */
+    const gridSpaceH = wrapperH - statsH - wGap;
+    const gridSpaceW = wrapperW;
+
+    if (gridSpaceH <= 0 || gridSpaceW <= 0) return;
+
+    /* --- внутренние зазоры .grid --- */
+    const gcs = getComputedStyle(gridEl);
+    const gPadV = (parseFloat(gcs.paddingTop)    || 0)
+                + (parseFloat(gcs.paddingBottom) || 0);
+    const gPadH = (parseFloat(gcs.paddingLeft)   || 0)
+                + (parseFloat(gcs.paddingRight)  || 0);
+    const gGapV = (parseFloat(gcs.rowGap)    || 0) * (PLAYFIELD_ROWS    - 1);
+    const gGapH = (parseFloat(gcs.columnGap) || 0) * (PLAYFIELD_COLUMNS - 1);
+
+    /* --- размер одной клетки (мин. из ограничений по H и W) --- */
+    const cellFromH = (gridSpaceH - gPadV - gGapV - SAFETY_PX) / PLAYFIELD_ROWS;
+    const cellFromW = (gridSpaceW - gPadH - gGapH - SAFETY_PX) / PLAYFIELD_COLUMNS;
+
+    let cellSize = Math.min(cellFromH, cellFromW);
+    if (!isFinite(cellSize) || cellSize < 4) cellSize = 4;
+    /* округляем ВНИЗ до 0.5px */
+    cellSize = Math.floor(cellSize * 2) / 2;
+
+    /* --- итоговый размер поля в px --- */
+    const finalW = cellSize * PLAYFIELD_COLUMNS + gGapH + gPadH;
+    const finalH = cellSize * PLAYFIELD_ROWS    + gGapV + gPadV;
+
+    gridEl.style.width  = finalW + "px";
+    gridEl.style.height = finalH + "px";
+}
 
 /* ─── Утилиты ────────────────────────────────────────────── */
 
@@ -478,6 +552,8 @@ function startGame() {
     initKeydown();
     initTouch();
 
+    refreshLayout();   // пересчёт размера поля перед первым кадром
+
     draw();
     startLoop();
 }
@@ -565,6 +641,25 @@ function initTouch() {
         rotate();
     });
 }
+
+/* ─── Обновление размеров при изменениях ─────────────────── */
+
+refreshLayout();
+
+window.addEventListener("resize", refreshLayout);
+window.addEventListener("orientationchange", () => {
+    // на iOS/Android размеры меняются с задержкой после поворота
+    setTimeout(refreshLayout, 100);
+    setTimeout(refreshLayout, 350);
+});
+
+if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", refreshLayout);
+    window.visualViewport.addEventListener("scroll", refreshLayout);
+}
+
+document.fonts?.ready.then(refreshLayout);
+window.addEventListener("load", refreshLayout);
 
 /* ─── Точка входа ────────────────────────────────────────── */
 
