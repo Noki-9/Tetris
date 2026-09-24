@@ -1,42 +1,76 @@
 /* ─── Сброс ─────────────────────────────────────────────── */
 
-* {
+*,
+*::before,
+*::after {
     padding: 0;
     margin: 0;
     box-sizing: border-box;
 }
 
+html {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+}
+
 body {
     display: flex;
     justify-content: center;
-    align-items: center;
-    height: 100vh;
+    align-items: stretch;
+    width: 100%;
+    height: var(--vh-px, 100vh);
     overflow: hidden;
     background: linear-gradient(90deg, #395492, #0099c0, #3dd5a8);
     font-family: Arial, Helvetica, sans-serif;
     color: #fff;
     user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    overscroll-behavior: none;
+    padding:
+        env(safe-area-inset-top,    0)
+        env(safe-area-inset-right,  0)
+        env(safe-area-inset-bottom, 0)
+        env(safe-area-inset-left,   0);
 }
 
-@supports (height: 100svh) {
-    body { height: 100svh; }
-}
-
-/* ─── Переменные размеров ───────────────────────────────── */
+/* ─── Переменные ────────────────────────────────────────── */
 
 :root {
-    --grid-gap:    0.4vh;
-    --grid-pad:    0.8vh;
-    --stats-h:     7vh;
-    --wrapper-gap: 1.4vh;
+    /* JS обновляет эти значения реальными размерами видимой области */
+    --vh-px: 100vh;
+    --vw-px: 100vw;
+
+    --safe-t: env(safe-area-inset-top,    0px);
+    --safe-r: env(safe-area-inset-right,  0px);
+    --safe-b: env(safe-area-inset-bottom, 0px);
+    --safe-l: env(safe-area-inset-left,   0px);
+
+    --grid-gap:       0.4vh;
+    --grid-pad:       0.6vh;
+    --wrapper-gap:    0.8vh;
+    --wrapper-pad-t:  0.5vh;
+    --wrapper-pad-x:  1vw;
 }
 
-@supports (height: 100svh) {
+@supports (height: 1svh) {
     :root {
         --grid-gap:    0.4svh;
-        --grid-pad:    0.8svh;
-        --stats-h:     7svh;
-        --wrapper-gap: 1.4svh;
+        --grid-pad:    0.6svh;
+        --wrapper-gap: 0.8svh;
+        --wrapper-pad-t: 0.5svh;
+    }
+}
+
+@supports (height: 1dvh) {
+    :root {
+        --grid-gap:    0.4dvh;
+        --grid-pad:    0.6dvh;
+        --wrapper-gap: 0.8dvh;
+        --wrapper-pad-t: 0.5dvh;
     }
 }
 
@@ -46,7 +80,14 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     gap: var(--wrapper-gap);
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    padding: var(--wrapper-pad-t) var(--wrapper-pad-x);
+    overflow: hidden;
     z-index: 1;
 }
 
@@ -55,28 +96,31 @@ body {
 .stats {
     display: flex;
     align-items: center;
-    gap: 3vh;
+    gap: clamp(0.6rem, 2.2vh, 1.4rem);
     width: 100%;
-    padding: 0 0.6vh;
-    color: #fff;
+    max-width: 100%;
+    padding: 0 0.3vh;
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+    flex-shrink: 0;
 }
 
 .stat {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    min-width: 0;
 }
 
 .stat-label {
-    font-size: 1.4vh;
-    letter-spacing: 0.2vh;
+    font-size: clamp(0.6rem, 1.5vh, 0.85rem);
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     opacity: 0.75;
+    white-space: nowrap;
 }
 
 .stat-value {
-    font-size: 3vh;
+    font-size: clamp(1.1rem, 2.8vh, 1.6rem);
     font-weight: 700;
     line-height: 1;
 }
@@ -87,77 +131,57 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 5vh;
-    height: 5vh;
+    width:  max(42px, 4.5vh);
+    height: max(42px, 4.5vh);
     margin-left: auto;
     border: none;
-    border-radius: 1vh;
+    border-radius: 0.8vh;
     cursor: pointer;
     background: rgba(255, 255, 255, 0.12);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
     transition: background 0.15s ease, transform 0.15s ease;
+    flex-shrink: 0;
 }
 
-.pause-btn:hover  { background: rgba(255, 255, 255, 0.22); }
 .pause-btn:active { transform: scale(0.94); }
 
-.pause-icon,
-.pause-icon::after {
-    display: block;
-    width: 0.6vh;
-    height: 2.4vh;
-    border-radius: 0.2vh;
-    background: #fff;
-}
-
 .pause-icon {
-    position: relative;
-    transform: translateX(-0.7vh);
+    display: flex;
+    align-items: center;
+    gap: clamp(3px, 0.6vh, 5px);
 }
 
+.pause-icon::before,
 .pause-icon::after {
     content: "";
-    position: absolute;
-    left: 1.4vh;
-    top: 0;
+    display: block;
+    width:  clamp(2px, 0.45vh, 3.5px);
+    height: clamp(9px, 1.8vh, 14px);
+    border-radius: 1px;
+    background: #fff;
 }
 
 /* ─── Игровое поле ──────────────────────────────────────── */
 
 .grid {
     display: grid;
-    grid-template-columns: repeat(10, auto);
-    grid-template-rows: repeat(20, auto);
+    grid-template-columns: repeat(10, 1fr);
+    grid-template-rows: repeat(20, 1fr);
     padding: var(--grid-pad);
     gap: var(--grid-gap);
-    border-radius: 0.6vh;
+    border-radius: 0.5vh;
     background-color: rgba(1, 8, 89, 0.5);
+    flex-shrink: 0;
+    /* width и height задаются из JS в пикселях */
 }
 
 .grid > div {
-    --cell-from-h: calc(
-        (100vh
-            - var(--stats-h)
-            - var(--wrapper-gap)
-            - 19 * var(--grid-gap)
-            - 2  * var(--grid-pad)
-        ) / 20
-    );
-
-    --cell-from-w: calc(
-        (100vw
-            - 9 * var(--grid-gap)
-            - 2 * var(--grid-pad)
-            - 2vw
-        ) / 10
-    );
-
-    --cell-size: min(var(--cell-from-h), var(--cell-from-w));
-
-    height: var(--cell-size);
-    width: var(--cell-size);
-    border-radius: 0.3vh;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    border-radius: 0.25vh;
     background-color: rgba(126, 150, 221, 0.2);
 }
 
@@ -206,10 +230,11 @@ body {
     top: 0;
     left: 0;
     right: 0;
-    bottom: 0;
+    height: var(--vh-px, 100vh);
     display: flex;
     justify-content: center;
     align-items: center;
+    padding: 0.6rem;
     background: rgba(1, 8, 89, 0.55);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
@@ -230,34 +255,37 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1.8vh;
-    padding: 4vh 5vh;
-    border-radius: 1.4vh;
+    gap: clamp(0.6rem, 1.5vh, 1.2rem);
+    padding: clamp(1.2rem, 3vh, 2.2rem) clamp(1.2rem, 4.5vh, 2.4rem);
+    border-radius: 1.2vh;
     background: rgba(20, 30, 70, 0.75);
     border: 1px solid rgba(255, 255, 255, 0.15);
     box-shadow:
-        0 1.2vh 3vh rgba(0, 0, 0, 0.35),
-        inset 0 0 3vh rgba(255, 255, 255, 0.04);
+        0 1vh 2.5vh rgba(0, 0, 0, 0.35),
+        inset 0 0 2.5vh rgba(255, 255, 255, 0.04);
     color: #fff;
     text-align: center;
-    min-width: 26vh;
+    min-width: min(80vw, 300px);
+    max-width: min(92vw, 400px);
+    max-height: calc(var(--vh-px) - var(--safe-t) - var(--safe-b) - 4vw);
+    overflow-y: auto;
 }
 
 .menu-title {
-    font-size: 4.5vh;
-    letter-spacing: 0.6vh;
+    font-size: clamp(1.5rem, 4.5vmin, 2.4rem);
+    letter-spacing: 0.12em;
     text-shadow: 0 0 2vh rgba(120, 200, 255, 0.55);
     font-weight: 700;
 }
 
 .menu-subtitle {
-    font-size: 1.6vh;
+    font-size: clamp(0.8rem, 1.6vh, 1rem);
     opacity: 0.7;
-    letter-spacing: 0.15vh;
+    letter-spacing: 0.08em;
 }
 
 .final-score {
-    font-size: 6vh;
+    font-size: clamp(2.2rem, 7vmin, 3.5rem);
     font-weight: 700;
     color: #6be1ec;
     text-shadow: 0 0 2.5vh rgba(107, 225, 236, 0.6);
@@ -265,29 +293,27 @@ body {
 }
 
 .menu-btn {
-    margin-top: 1vh;
-    padding: 1.4vh 3.5vh;
-    font-size: 1.8vh;
+    min-height: 42px;
+    margin-top: 0.4rem;
+    padding: 0.8rem clamp(1.2rem, 5vw, 2rem);
+    font-size: clamp(0.85rem, 1.7vh, 1rem);
     font-weight: 700;
-    letter-spacing: 0.2vh;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
     color: #fff;
     background: linear-gradient(135deg, #0099c0, #3dd5a8);
     border: none;
-    border-radius: 0.8vh;
+    border-radius: 0.7vh;
     cursor: pointer;
-    box-shadow: 0 0.6vh 1.6vh rgba(0, 153, 192, 0.45);
+    box-shadow: 0 0.5vh 1.4vh rgba(0, 153, 192, 0.45);
     transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.menu-btn:hover {
-    transform: translateY(-0.2vh);
-    box-shadow: 0 0.9vh 2vh rgba(0, 153, 192, 0.6);
+    -webkit-appearance: none;
+    appearance: none;
 }
 
 .menu-btn:active {
     transform: translateY(0.2vh);
-    box-shadow: 0 0.3vh 1vh rgba(0, 153, 192, 0.45);
+    box-shadow: 0 0.25vh 0.8vh rgba(0, 153, 192, 0.45);
 }
 
 .menu-btn--ghost {
@@ -296,7 +322,7 @@ body {
     box-shadow: none;
 }
 
-.menu-btn--ghost:hover {
+.menu-btn--ghost:active {
     background: rgba(255, 255, 255, 0.08);
     box-shadow: none;
 }
@@ -304,8 +330,117 @@ body {
 .menu-hint {
     display: flex;
     flex-direction: column;
-    gap: 0.4vh;
-    margin-top: 1.2vh;
-    font-size: 1.3vh;
+    gap: 0.25rem;
+    margin-top: 0.6rem;
+    font-size: clamp(0.65rem, 1.3vh, 0.8rem);
     opacity: 0.55;
+}
+
+/* ─── Hover — только для устройств с мышью ──────────────── */
+
+@media (hover: hover) and (pointer: fine) {
+    .pause-btn:hover { background: rgba(255, 255, 255, 0.22); }
+
+    .menu-btn:hover {
+        transform: translateY(-0.2vh);
+        box-shadow: 0 0.8vh 1.8vh rgba(0, 153, 192, 0.6);
+    }
+
+    .menu-btn--ghost:hover {
+        background: rgba(255, 255, 255, 0.08);
+        box-shadow: none;
+    }
+}
+
+/* ─── Телефоны (узкие экраны) ───────────────────────────── */
+
+@media (max-width: 480px) {
+    :root {
+        --grid-gap:       0.3vh;
+        --grid-pad:       0.5vh;
+        --wrapper-gap:    0.6vh;
+        --wrapper-pad-t:  0.4vh;
+        --wrapper-pad-x:  1.2vw;
+    }
+
+    @supports (height: 1svh) {
+        :root {
+            --grid-gap:    0.3svh;
+            --grid-pad:    0.5svh;
+            --wrapper-gap: 0.6svh;
+        }
+    }
+
+    @supports (height: 1dvh) {
+        :root {
+            --grid-gap:    0.3dvh;
+            --grid-pad:    0.5dvh;
+            --wrapper-gap: 0.6dvh;
+        }
+    }
+
+    .stats {
+        gap: 0.8rem;
+        padding: 0 0.2vh;
+    }
+
+    .stat-label { font-size: 0.55rem; letter-spacing: 0.08em; }
+    .stat-value { font-size: 1rem; }
+
+    .menu {
+        padding: 1rem 0.9rem;
+        gap: 0.6rem;
+        min-width: min(88vw, 300px);
+        max-width: 94vw;
+    }
+
+    .menu-title { letter-spacing: 0.08em; }
+    .menu-btn   { padding: 0.75rem 1.2rem; width: 100%; }
+    .menu-hint  { font-size: 0.65rem; }
+}
+
+/* ─── Очень узкие экраны (≤ 360px) ─────────────────────── */
+
+@media (max-width: 360px) {
+    .stat-value { font-size: 0.95rem; }
+    .stat-label { font-size: 0.5rem; }
+}
+
+/* ─── Телефон в альбомной ориентации ────────────────────── */
+
+@media (orientation: landscape) and (max-height: 500px) {
+    :root {
+        --wrapper-gap:    0.4vh;
+        --grid-gap:       0.25vh;
+        --grid-pad:       0.4vh;
+        --wrapper-pad-t:  0.3vh;
+        --wrapper-pad-x:  0.8vw;
+    }
+
+    @supports (height: 1svh) {
+        :root {
+            --wrapper-gap: 0.4svh;
+            --grid-gap:    0.25svh;
+            --grid-pad:    0.4svh;
+        }
+    }
+
+    @supports (height: 1dvh) {
+        :root {
+            --wrapper-gap: 0.4dvh;
+            --grid-gap:    0.25dvh;
+            --grid-pad:    0.4dvh;
+        }
+    }
+
+    .stat-label { font-size: 0.5rem; }
+    .stat-value { font-size: 0.9rem; }
+
+    .menu {
+        padding: 0.8rem 1.2rem;
+        gap: 0.4rem;
+    }
+
+    .menu-title { font-size: 1.3rem; }
+    .menu-hint  { display: none; }
 }
